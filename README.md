@@ -1,14 +1,5 @@
 # Intelligent Driver Assistance System (IDAS)
 
-## Table of Contents
-- [Problem Definition](#problem-definition)
-- [Proposed Solution](#proposed-solution)
-- [Features](#features)
-- [Installation](#installation)
-- [Usage](#usage)
-- [Contributing](#contributing)
-- [License](#license)
-
 ## Problem Definition
 
 Road accidents are a significant concern due to factors such as human fatigue, vehicle errors, and road faults. Current safety measures often lack real-time intervention, leading to avoidable accidents and injuries.
