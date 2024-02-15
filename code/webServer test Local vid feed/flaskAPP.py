@@ -1,6 +1,6 @@
 import cv2
 import numpy as np
-from flask import Flask, request, render_template, Response, jsonify
+from flask import Flask, render_template, Response, jsonify, request
 
 app = Flask(__name__)
 
@@ -12,8 +12,6 @@ frame_array = []
 
 def process_video(file_stream):
     cap = cv2.VideoCapture(file_stream)
-    
-    frame_count = 0  # Initialize frame count for creating unique filenames
 
     while True:
         # Read a frame from the video
@@ -26,25 +24,25 @@ def process_video(file_stream):
         # Append the new frame to the array
         frame_array.append(frame)
 
-        # If the number of frames exceeds the maximum allowed, remove the oldest frame
-        if len(frame_array) > max_frames:
-            frame_array.pop(0)
-
         # Yield the frame for the Flask streaming response
         ret, buffer = cv2.imencode('.jpg', frame)
         frame_bytes = buffer.tobytes()
         yield (b'--frame\r\n'
                b'Content-Type: image/jpeg\r\n\r\n' + frame_bytes + b'\r\n')
 
-        # Save the frame as text to a unique filename
-        filename = f'frame_{frame_count}.txt'
-        with open(filename, 'a') as f:
-            np.savetxt(f, frame.flatten(), fmt='%d', delimiter=',')
-
-        frame_count += 1  # Increment frame count for the next iteration
-
     # Release the video capture object
     cap.release()
+
+def generate_preview_frames():
+    while True:
+        if len(frame_array) > 0:
+            latest_frame = frame_array[-1]
+            print("Latest frame shape:", latest_frame.shape)
+            ret, buffer = cv2.imencode('.jpg', latest_frame)
+            frame_bytes = buffer.tobytes()
+            yield (b'--frame\r\n'
+                   b'Content-Type: image/jpeg\r\n\r\n' + frame_bytes + b'\r\n')
+
 
 @app.route('/')
 def index():
@@ -63,6 +61,11 @@ def upload():
     if file:
         # Process the video and return a successful response
         return jsonify({'status': 'ok', 'message': 'Upload successful'})
+
+@app.route('/preview')
+def preview():
+    return render_template('preview.html', preview_route="/preview")
+
 
 if __name__ == '__main__':
     app.run(debug=True)
